@@ -408,7 +408,7 @@ export default function AdminDashboard() {
                 >
                   <input
                     type="file"
-                    accept=".pdf,.txt,.docx"
+                    accept=".pdf,.txt,.docx,.db,.sqlite,.sqlite3"
                     multiple
                     onChange={handleFileInput}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -458,7 +458,7 @@ export default function AdminDashboard() {
                         Toplu Dosya Yükle
                       </h3>
                       <p className={`text-[13.5px] max-w-[280px] mx-auto leading-relaxed ${isDarkMode ? "text-white/50" : "text-slate-500"}`}>
-                        Dosyaları sürükleyin veya seçmek için tıklayın (PDF, TXT, DOCX).
+                        Dosyaları sürükleyin veya seçmek için tıklayın (PDF, TXT, DOCX, DB).
                       </p>
                     </div>
                   )}
