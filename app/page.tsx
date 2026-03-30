@@ -185,7 +185,7 @@ export default function Home() {
     ]);
 
     abortControllerRef.current = new AbortController();
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://esbasai.melihcetin.dev";
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api-esbas.melihcetin.dev";
     try {
       const res = await fetch(`${API_BASE_URL}/ask_stream`, {
         method: "POST",

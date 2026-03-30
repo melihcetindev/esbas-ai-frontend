@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 // DİNAMİK API URL TANIMLAMASI
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://esbasai.melihcetin.dev";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api-esbas.melihcetin.dev";
 
 interface Metrikler {
   soruyu_anlama?: number;
