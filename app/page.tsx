@@ -189,7 +189,10 @@ export default function Home() {
     try {
       const res = await fetch(`${API_BASE_URL}/ask_stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true" 
+        },
         signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           question,

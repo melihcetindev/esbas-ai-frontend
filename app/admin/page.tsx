@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useModal } from "../components/ModalContext";
 import {
   Activity,
   Clock,
@@ -76,6 +77,8 @@ const deepUrlSteps = [
 ];
 
 export default function AdminDashboard() {
+  const { showConfirm, showToast, isDarkMode, setIsDarkMode } = useModal();
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [docs, setDocs] = useState<DocEntry[]>([]);
   const [urls, setUrls] = useState<UrlEntry[]>([]);
@@ -84,7 +87,6 @@ export default function AdminDashboard() {
   const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Upload States (Docs)
   const [isDragging, setIsDragging] = useState(false);
@@ -161,51 +163,61 @@ export default function AdminDashboard() {
   };
 
   // ====== BULK SİLME (DOCS) ======
-  const handleDeleteBulkDocs = async () => {
+  const handleDeleteBulkDocs = () => {
     if (selectedDocs.length === 0) return;
-    if (!window.confirm(`${selectedDocs.length} adet belgeyi silmek istediğinize emin misiniz?`)) return;
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/delete_docs/bulk`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filenames: selectedDocs })
-      });
-      if (res.ok) {
-        setDocs(prev => prev.filter(d => !selectedDocs.includes(d.name)));
-        setSelectedDocs([]);
-      } else {
-        const err = await res.json();
-        alert("Hata: " + err.message);
+    showConfirm(
+      "Belgeleri Sil",
+      `${selectedDocs.length} adet belgeyi kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
+      async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/delete_docs/bulk`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filenames: selectedDocs })
+          });
+          if (res.ok) {
+            setDocs(prev => prev.filter(d => !selectedDocs.includes(d.name)));
+            setSelectedDocs([]);
+            showToast(`${selectedDocs.length} belge başarıyla silindi.`, "success");
+          } else {
+            const err = await res.json();
+            showToast("Hata: " + err.message, "error");
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("Silme işlemi sırasında ağ hatası oluştu.", "error");
+        }
       }
-    } catch (e) {
-      console.error(e);
-      alert("Silme işlemi sırasında ağ hatası oluştu.");
-    }
+    );
   };
 
   // ====== BULK SİLME (URLS) ======
-  const handleDeleteBulkUrls = async () => {
+  const handleDeleteBulkUrls = () => {
     if (selectedUrls.length === 0) return;
-    if (!window.confirm(`${selectedUrls.length} adet web sitesini silmek istediğinize emin misiniz?`)) return;
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/delete_urls/bulk`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: selectedUrls })
-      });
-      if (res.ok) {
-        setUrls(prev => prev.filter(u => !selectedUrls.includes(u.url)));
-        setSelectedUrls([]);
-      } else {
-        const err = await res.json();
-        alert("Hata: " + err.message);
+    showConfirm(
+      "Web Sitelerini Sil",
+      `${selectedUrls.length} adet web sitesini kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`,
+      async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/delete_urls/bulk`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls: selectedUrls })
+          });
+          if (res.ok) {
+            setUrls(prev => prev.filter(u => !selectedUrls.includes(u.url)));
+            setSelectedUrls([]);
+            showToast(`${selectedUrls.length} web sitesi başarıyla silindi.`, "success");
+          } else {
+            const err = await res.json();
+            showToast("Hata: " + err.message, "error");
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("Silme işlemi sırasında ağ hatası oluştu.", "error");
+        }
       }
-    } catch (e) {
-      console.error(e);
-      alert("Silme işlemi sırasında ağ hatası oluştu.");
-    }
+    );
   };
 
   // ====== DOKÜMAN YÜKLEME ======
@@ -256,13 +268,13 @@ export default function AdminDashboard() {
 
       if (res.ok && data.status === "success") {
         await fetchDocs();
-        setTimeout(() => alert(`${selectedFiles.length} adet belge başarıyla hafızaya işlendi! 🚀`), 500);
+        setTimeout(() => showToast(`${selectedFiles.length} adet belge başarıyla hafızaya işlendi! 🚀`, "success"), 500);
       } else {
         throw new Error(data.message || "Sunucudan hata döndü.");
       }
     } catch (e: any) {
       clearInterval(stepInterval);
-      alert("Hata: " + (e.message || "Beklenmeyen bir sorun oluştu."));
+      showToast("Hata: " + (e.message || "Beklenmeyen bir sorun oluştu."), "error");
     } finally {
       setTimeout(() => { setIsUploading(false); setUploadProgress(0); setDocStepIndex(0); }, 1500);
     }
@@ -305,13 +317,13 @@ export default function AdminDashboard() {
       if (res.ok && data.status === "success") {
         await fetchUrls();
         setUrlInput("");
-        setTimeout(() => alert(data.message || "Web sitesi başarıyla öğrenildi! 🚀"), 500);
+        setTimeout(() => showToast(data.message || "Web sitesi başarıyla öğrenildi! 🚀", "success"), 500);
       } else {
-        alert("Hata: " + data.message);
+        showToast("Hata: " + data.message, "error");
       }
     } catch (err) {
       clearInterval(stepInterval);
-      alert("Ağ hatası oluştu.");
+      showToast("Ağ hatası oluştu.", "error");
     } finally {
       setTimeout(() => { setIsUrlUploading(false); setUrlUploadProgress(0); setUrlStepIndex(0); }, 1500);
     }
